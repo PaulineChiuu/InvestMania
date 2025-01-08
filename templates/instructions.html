@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InvestMania - 使用說明</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <!-- 添加 Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .animated-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(135deg,
+                rgba(59, 130, 246, 0.9) 0%,      /* 藍色開始 */
+                rgba(139, 92, 246, 0.9) 40%,     /* 紫色提前出現 */
+                rgba(147, 51, 234, 0.9) 60%,     /* 深紫色 */
+                rgba(59, 130, 246, 0.9) 100%     /* 藍色結束 */
+            );
+            background-size: 400% 400%;
+            animation: gradientFlow 8s ease infinite;
+        }
+
+        @keyframes gradientFlow {
+            0% {
+                background-position: 0% 0%;
+            }
+            50% {
+                background-position: 100% 100%;
+            }
+            100% {
+                background-position: 0% 0%;
+            }
+        }
+
+        .icon-title {
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <div class="animated-gradient"></div>
+    <div class="container mx-auto px-4 py-12">
+        <div class="max-w-4xl mx-auto">
+            <div class="glass-card rounded-3xl p-8 shadow-xl">
+                <h1 class="text-5xl font-black text-gray-800 mb-8">InvestMania 使用說明</h1>
+
+                <!-- 基本使用說明 -->
+                <section class="mb-10">
+                    <h2 class="text-2xl font-semibold text-gray-700 mb-4 icon-title">
+                        <i data-lucide="book-open" class="h-6 w-6 mr-2 text-purple-800"></i>
+                        基本使用方法
+                    </h2>
+                    <div class="space-y-4 text-gray-600">
+                        <p>1. 在輸入框中輸入欲查詢的股票代碼（例如：2330.TW）</p>
+                        <p>2. 點擊「進行預測」按鈕</p>
+                        <p>3. 系統將自動分析並顯示預測結果</p>
+                    </div>
+                </section>
+
+                <!-- 預測指標說明 -->
+                <section class="mb-10">
+                    <h2 class="text-2xl font-semibold text-gray-700 mb-4 icon-title">
+                        <i data-lucide="bar-chart-2" class="h-6 w-6 mr-2 text-green-600"></i>
+                        預測指標說明
+                    </h2>
+                    
+                    <div class="mb-6">
+                        <h3 class="text-xl font-semibold text-gray-700 mb-3">技術指標</h3>
+                        <div class="space-y-4 text-gray-600">
+                            <div>
+                                <p class="font-medium">成交量</p>
+                                <p>• 當日成交量 > 最近20日均量 1.5 倍：可能是買盤積極信號</p>
+                                <p>• 當日成交量 < 最近20日均量 0.5 倍：市場活躍度下降</p>
+                            </div>
+
+                            <div>
+                                <p class="font-medium">MA (移動平均線)</p>
+                                <p>• MA5：5日移動平均線</p>
+                                <p>• MA20：20日移動平均線</p>
+                                <p>• 短期均線上穿長期均線：黃金交叉，可能上漲</p>
+                                <p>• 短期均線下穿長期均線：死亡交叉，可能下跌</p>
+                            </div>
+                            
+                            <div>
+                                <p class="font-medium">RSI (相對強弱指標)</p>
+                                <p>• RSI > 70：超買，可能回調</p>
+                                <p>• RSI < 30：超賣，可能反彈</p>
+                                <p>• 30 ≤ RSI ≤ 70：正常波動</p>
+                            </div>
+
+                            <div>
+                                <p class="font-medium">MACD (移動平均趨勢指標)</p>
+                                <p>• MACD > 0 且向上交叉信號線：買入信號</p>
+                                <p>• MACD < 0 且向下交叉信號線：賣出信號</p>
+                            </div>
+
+                            <div>
+                                <p class="font-medium">布林通道</p>
+                                <p>• 價格接近上軌：可能超買，市場情緒可能過於樂觀，需注意回調風險</p>
+                                <p>• 價格接近下軌：可能超賣，市場情緒可能過於悲觀，潛在反彈機會較高</p>
+                                <p>• 價格在中軌附近：表示價格趨於穩定，是多空相對平衡的狀態</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <h3 class="text-xl font-semibold text-gray-700 mb-3">馬可夫鏈狀態說明</h3>
+                        <div class="space-y-2 text-gray-600">
+                            <p>• 大漲(++)：單日漲幅 ≥ 6%</p>
+                            <p>• 小漲(+)：0.5% ≤ 單日漲幅 < 6%</p>
+                            <p>• 平盤(~)：-0.5% ≤ 單日漲跌幅 < 0.5%</p>
+                            <p>• 小跌(-)：-6% ≤ 單日跌幅 < -0.5%</p>
+                            <p>• 大跌(--)：單日跌幅 < -6%</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-700 mb-3">預測結果解讀</h3>
+                        <div class="space-y-2 text-gray-600">
+                            <p>• 預測價格：下一交易日收盤價預測</p>
+                            <p>• 預期報酬率：價格變動百分比</p>
+                            <p>• 預測區間：95% 信賴區間</p>
+                            <p>• 狀態預測：馬可夫鏈趨勢</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 注意事項 -->
+                <section class="mb-10">
+                    <h2 class="text-2xl font-semibold text-gray-700 mb-4 icon-title">
+                        <i data-lucide="alert-triangle" class="h-6 w-6 mr-2 text-red-700"></i>
+                        注意事項
+                    </h2>
+                    <div class="space-y-2 text-gray-600">
+                        <p>• 本系統提供的預測僅供參考，不構成投資建議</p>
+                        <p>• 投資決策應考慮個人風險承受能力和市場實際狀況</p>
+                        <p>• 過去的表現不代表未來的走勢</p>
+                        <p>• 建議配合其他分析工具和專業意見使用</p>
+                    </div>
+                </section>
+
+                <!-- 進入按鈕 -->
+                <div class="text-center mt-12 space-x-4">
+                    <a href="{{ url_for('welcome') }}" 
+                       class="inline-block px-8 py-3.5 bg-white text-purple-600 rounded-full font-semibold text-lg transform hover:scale-105 transition-transform duration-200 hover:shadow-lg border-2 border-purple-300">
+                        返回
+                    </a>
+
+                    <a href="{{ url_for('predict_form') }}" 
+                       class="inline-block px-8 py-4 bg-blue-600 text-white rounded-full font-semibold text-lg transform hover:scale-105 transition-transform duration-200 hover:shadow-lg">
+                        進入 InvestMania
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

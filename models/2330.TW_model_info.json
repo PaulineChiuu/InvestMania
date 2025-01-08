@@ -1,0 +1,11 @@
+{
+    "last_update": "2025-01-08 02:38:40",
+    "symbol": "2330.TW",
+    "input_shape": [
+        401,
+        20,
+        9
+    ],
+    "training_samples": 320,
+    "validation_samples": 81
+}

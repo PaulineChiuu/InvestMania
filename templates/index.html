@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InvestMania</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <!-- 添加 Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <style>
+        /* 動態背景基礎樣式 */
+        .animated-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(135deg,
+                rgba(59, 130, 246, 0.9) 0%,     
+                rgba(139, 92, 246, 0.9) 40%,   
+                rgba(147, 51, 234, 0.9) 60%,  
+                rgba(59, 130, 246, 0.9) 100%  
+            );
+            background-size: 400% 400%;
+            animation: gradientFlow 8s ease infinite;
+        }
+
+        @keyframes gradientFlow {
+            0% {
+                background-position: 0% 0%;
+            }
+            50% {
+                background-position: 100% 100%;
+            }
+            100% {
+                background-position: 0% 0%;
+            }
+        }
+
+        /* 半透明卡片樣式 */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Instructions page icons */
+        .icon {
+            display: inline-flex;
+            align-items: center;
+            margin-right: 0.5rem;
+        }
+
+        .icon svg {
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+
+        /* 添加卡片懸浮效果 */
+        .hover-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .hover-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="animated-gradient"></div>
+    <!-- 動態背景 -->
+    <div class="animated-background">
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+    </div>
+
+    <div class="container mx-auto px-0 py-8 relative">
+        <div class="flex justify-between items-center mb-8">
+            <div class="flex items-center space-x-3">
+                <h1 class="text-6xl font-black text-gray-800">
+                    InvestMania
+                </h1>
+            </div>
+            <a href="{{ url_for('welcome') }}" class="flex items-center text-gray-200 hover:text-purple-800 font-medium">
+                <i data-lucide="home" class="h-5 w-5 mr-1"></i>
+                返回首頁
+            </a>
+        </div>
+        
+        <div class="max-w-2xl mx-auto glass-card bg-opacity-95 rounded-2xl shadow-xl p-8 hover-card">
+            <form id="predictionForm" class="space-y-6">
+                <div>
+                    <label class="block text-lg font-medium text-gray-700 mb-2">
+                        <i data-lucide="search" class="inline h-5 w-5 mr-2"></i>
+                        股票代碼
+                    </label>
+                    <div class="relative">
+                        <input type="text" id="symbol" name="symbol" required
+                                placeholder="例如：2330.TW"
+                                class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-lg py-3 px-4 bg-white bg-opacity-70 backdrop-blur-sm">
+                        <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                            <i data-lucide="chart-line" class="h-5 w-5"></i>
+                        </div>
+                    </div>
+                    <p class="mt-2 text-sm text-gray-500">
+                        <i data-lucide="info" class="inline h-4 w-4 mr-1"></i>
+                        請輸入台股代碼，後方需加上.TW
+                    </p>
+                </div>
+                
+                <button type="submit" 
+                        class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl py-3 px-4 font-medium text-lg transform transition-all duration-200 hover:shadow-lg hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center">
+                    <i data-lucide="search" class="h-5 w-5 mr-2"></i>
+                    開始預測
+                </button>
+            </form>
+        </div>
+
+        <div id="loadingIndicator" class="hidden">
+            <div class="flex justify-center items-center py-12">
+                <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-600"></div>
+            </div>
+        </div>
+
+        <!-- 預測結果區塊 -->
+        <div id="results" class="hidden space-y-8 mt-8">
+            <!-- 基本預測結果 -->
+            <div class="bg-white bg-opacity-95 rounded-2xl shadow-xl p-6 hover-card">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6 flex items-center">
+                    <i data-lucide="pie-chart" class="h-6 w-6 mr-2 text-blue-600"></i>
+                    預測結果
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <p class="text-gray-600 flex items-center">
+                            <i data-lucide="calendar" class="h-5 w-5 mr-2 text-gray-400"></i>
+                            預測日期：<span id="predictionDate" class="font-medium ml-2"></span>
+                        </p>
+                        <p class="text-gray-600 flex items-center">
+                            <i data-lucide="dollar-sign" class="h-5 w-5 mr-2 text-gray-400"></i>
+                            目前股價：<span id="currentPrice" class="font-medium ml-2"></span>
+                        </p>
+                        <p class="text-gray-600 flex items-center">
+                            <i data-lucide="trending-up" class="h-5 w-5 mr-2 text-gray-400"></i>
+                            預測價格：<span id="predictedPrice" class="font-medium ml-2"></span>
+                        </p>
+                    </div>
+                    <div class="space-y-4">
+                        <p class="text-gray-600 flex items-center">
+                            <i data-lucide="percent" class="h-5 w-5 mr-2 text-gray-400"></i>
+                            預期報酬率：<span id="predictedReturn" class="font-medium ml-2"></span>
+                        </p>
+                        <p class="text-gray-600 flex items-center">
+                            <i data-lucide="gauge" class="h-5 w-5 mr-2 text-gray-400"></i>
+                            預測區間：<span id="confidenceInterval" class="font-medium ml-2"></span>
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- 準確率資訊 -->
+                <div class="mt-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <i data-lucide="check-circle" class="h-5 w-5 mr-2 text-green-600"></i>
+                        模型準確率
+                    </h3>
+                    <div class="space-y-3" id="accuracyContent">
+                        <!-- 準確率數據將由 JavaScript 動態更新 -->
+                    </div>
+                </div>
+                
+                <!-- 技術指標區域 -->
+                <div class="mt-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+                        <i data-lucide="activity" class="h-5 w-5 mr-2 text-red-400"></i>
+                        技術指標信號
+                    </h3>
+                    <div class="space-y-3" id="technicalSignals">
+                        <!-- JavaScript 生成的技術指標需要修改 -->
+                    </div>
+                </div>
+
+                <!-- Yahoo Finance 連結 -->
+                <div class="mt-6">
+                    <a id="yahooLink" href="#" target="_blank" 
+                       class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium group">
+                        <span>在 Yahoo Finance 查看更多資訊</span>
+                        <i data-lucide="external-link" class="h-5 w-5 ml-2 transform group-hover:translate-x-1 transition-transform"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 馬可夫鏈分析結果 -->
+            <div class="bg-white bg-opacity-95 rounded-2xl shadow-xl p-6 hover-card">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6 flex items-center">
+                    <i data-lucide="git-branch" class="h-6 w-6 mr-2 text-purple-600"></i>
+                    馬可夫鏈分析
+                </h2>
+                <div class="grid grid-cols-1 gap-6">
+                    <div class="space-y-4">
+                        <p class="text-gray-600 flex items-center">
+                            目前狀態：<span id="currentMarkovState" class="font-medium ml-2"></span>
+                        </p>
+                        <p class="text-gray-600 flex items-center">
+                            預測狀態：<span id="predictedMarkovState" class="font-medium ml-2"></span>
+                        </p>
+                    </div>
+
+                   
+                    <!-- 轉移矩陣表格 -->
+                    <div class="overflow-x-auto mt-4">
+                        <p class="text-gray-600 font-medium mb-2 flex items-center">
+                            <i data-lucide="git-branch" class="h-5 w-5 mr-2 text-purple-600"></i>
+                            轉移機率矩陣：
+                        </p>
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">從\到</th>
+                                    <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">大漲(++)</th>
+                                    <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">小漲(+)</th>
+                                    <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">平盤(~)</th>
+                                    <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">小跌(-)</th>
+                                    <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">大跌(--)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transitionMatrix" class="bg-white divide-y divide-gray-200"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 圖表區域 -->
+            <div class="bg-white bg-opacity-95 rounded-2xl shadow-xl p-6 hover-card">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6 flex items-center">
+                    <i data-lucide="line-chart" class="h-6 w-6 mr-2 text-green-600"></i>
+                    股價趨勢圖
+                </h2>
+                <img id="trendChart" class="w-full h-auto rounded-lg" alt="股價趨勢圖">
+            </div>
+
+            <!-- LSTM訓練歷史 -->
+            <div class="bg-white bg-opacity-95 rounded-2xl shadow-xl p-6 hover-card">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6 flex items-center">
+                    <i data-lucide="network" class="h-6 w-6 mr-2 text-orange-600"></i>
+                    LSTM訓練歷史
+                </h2>
+                <img id="trainingHistoryChart" class="w-full h-auto rounded-lg" alt="LSTM訓練歷史">
+            </div>
+        </div>
+
+        <div id="errorMessage" class="hidden">
+            <div class="max-w-2xl mx-auto mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl relative">
+                <i data-lucide="alert-triangle" class="inline h-5 w-5 mr-2"></i>
+                <span class="align-middle"></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化 Lucide 圖示
+        lucide.createIcons();
+        
+        document.getElementById('predictionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const results = document.getElementById('results');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            loadingIndicator.classList.remove('hidden');
+            results.classList.add('hidden');
+            errorMessage.classList.add('hidden');
+            
+            try {
+                const formData = new FormData();
+                formData.append('symbol', document.getElementById('symbol').value);
+                
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+    
+                const symbol = document.getElementById('symbol').value;
+                document.getElementById('yahooLink').href = `https://hk.finance.yahoo.com/quote/${symbol}/`;
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                // 處理準確率數據
+                if (data.accuracy) {
+                    const trainMae = data.accuracy.train_mae;
+                    const valMae = data.accuracy.val_mae;
+
+                    // 準確率內容
+                    const accuracyContent = document.getElementById('accuracyContent');
+                    if (accuracyContent) {
+                        accuracyContent.innerHTML = `
+                            <p class="text-gray-600 flex items-center">
+                                <i data-lucide="calculator" class="h-5 w-5 mr-2 text-gray-400"></i>
+                                訓練集準確率 (MAE)：<span class="font-medium">${(trainMae * 100).toFixed(2)}%</span>
+                            </p>
+                            <p class="text-gray-600 flex items-center">
+                                <i data-lucide="calculator" class="h-5 w-5 mr-2 text-gray-400"></i>
+                                驗證集準確率 (MAE)：<span class="font-medium">${(valMae * 100).toFixed(2)}%</span>
+                            </p>
+                        `;
+                        
+                        // 重新初始化新添加的圖標
+                        lucide.createIcons();
+                    }
+                }
+                if (!data.predictions) {
+                    throw new Error('無法取得預測資料');
+                }
+                
+                const statesOrder = ['大漲', '小漲', '平盤', '小跌', '大跌'];
+                
+                document.getElementById('predictionDate').textContent = data.predictions.prediction_date || '無資料';
+                document.getElementById('currentPrice').textContent = data.predictions.current_price ? data.predictions.current_price.toFixed(2) : '無資料';
+                document.getElementById('predictedPrice').textContent = data.predictions.predicted_price ? data.predictions.predicted_price.toFixed(2) : '無資料';
+                document.getElementById('predictedReturn').textContent = data.predictions.predicted_return ? `${data.predictions.predicted_return.toFixed(2)}%` : '無資料';
+                
+                const confidenceInterval = document.getElementById('confidenceInterval');
+                if (data.predictions.confidence_interval) {
+                    confidenceInterval.textContent = `${data.predictions.confidence_interval.lower_bound.toFixed(2)} - ${data.predictions.confidence_interval.upper_bound.toFixed(2)}`;
+                } else {
+                    confidenceInterval.textContent = '無資料';
+                }
+                
+                const technicalSignalsList = document.getElementById('technicalSignals');
+                technicalSignalsList.innerHTML = '';
+                if (data.predictions.technical_signals) {
+                    Object.entries(data.predictions.technical_signals).forEach(([key, value]) => {
+                        const div = document.createElement('div');
+                        div.className = 'flex items-center text-gray-600';
+                        div.innerHTML = `
+                            <span class="text-gray-500">• ${key}：</span>
+                            <span class="font-medium ml-2">${value}</span>
+                        `;
+                        technicalSignalsList.appendChild(div);
+                    });
+                }
+                
+                const markovData = data.predictions.markov_prediction;
+                if (markovData) {
+                    document.getElementById('currentMarkovState').textContent = 
+                        markovData.current_state ? `${markovData.current_state.state} (${markovData.current_state.symbol})` : '無資料';
+                    document.getElementById('predictedMarkovState').textContent = 
+                        markovData.predicted_state ? `${markovData.predicted_state.state} (${markovData.predicted_state.symbol})` : '無資料';
+                    
+                        const statsTable = document.getElementById('stateStats');
+                        if (statsTable) {
+                            statsTable.innerHTML = '';
+                            statesOrder.forEach(state => {
+                            const stats = markovData.state_statistics[state];
+                            if (stats) {
+                                const row = document.createElement('tr');
+                            row.className = 'hover:bg-gray-50';
+                            row.innerHTML = `
+                                <td class="px-3 py-2 text-sm text-gray-900">${state}</td>
+                                <td class="px-3 py-2 text-sm text-gray-900">${stats.symbol}</td>
+                                <td class="px-3 py-2 text-sm text-gray-900 text-right">${stats.count}</td>
+                                <td class="px-3 py-2 text-sm text-gray-900 text-right">${stats.percentage.toFixed(2)}%</td>
+                            `;
+            statsTable.appendChild(row);
+        }
+    });
+}
+                    
+                    const matrixTable = document.getElementById('transitionMatrix');
+                    matrixTable.innerHTML = '';
+                    statesOrder.forEach(fromState => {
+                        const transitions = markovData.transition_matrix[fromState];
+                        if (transitions) {
+                            const row = document.createElement('tr');
+                            row.className = 'hover:bg-gray-50';
+                            let rowHtml = `<td class="px-3 py-2 text-sm text-gray-900">${fromState}</td>`;
+                            
+                            statesOrder.forEach(toState => {
+                                const value = transitions[toState];
+                                rowHtml += `
+                                    <td class="px-3 py-2 text-sm text-gray-900 text-right">
+                                        ${(value * 100).toFixed(1)}%
+                                    </td>`;
+                            });
+                            
+                            row.innerHTML = rowHtml;
+                            matrixTable.appendChild(row);
+                        }
+                    });
+                }
+                
+                if (data.trend_image) {
+                    document.getElementById('trendChart').src = 'data:image/png;base64,' + data.trend_image;
+                }
+    
+                if (data.predictions.training_history_image) {
+                    document.getElementById('trainingHistoryChart').src = 'data:image/png;base64,' + data.predictions.training_history_image;
+                }
+                
+                results.classList.remove('hidden');
+                
+            } catch (error) {
+                errorMessage.querySelector('span').textContent = error.message;
+                errorMessage.classList.remove('hidden');
+            } finally {
+                loadingIndicator.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
